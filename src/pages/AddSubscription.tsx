@@ -74,44 +74,49 @@ export const AddSubscription = ({ onClose, onSave }: AddSubscriptionProps) => {
 
   if (step === "search") {
     return (
-      <div className="min-h-screen bg-gradient-bg">
+      <div className="min-h-screen bg-gradient-bg animate-fade-in">
         {/* Header */}
-        <div className="bg-gradient-primary p-6 text-white">
-          <div className="flex items-center gap-4 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Add Subscription</h1>
-              <p className="text-primary-foreground/80">Find your service or add manually</p>
+        <div className="bg-gradient-primary p-6 text-white relative overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl animate-float" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="text-white hover:bg-white/10 hover-scale"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Add Subscription</h1>
+                <p className="text-primary-foreground/80 mt-1">Find your service or add manually</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6 stagger-children">
           {/* Search */}
-          <Card className="shadow-card">
+          <Card className="card-enhanced animate-scale-in">
             <CardContent className="p-6">
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder="Search for a service..."
-                  className="pl-10"
+                  className="pl-10 h-12 text-lg"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button 
                   onClick={() => setStep("manual")}
-                  className="flex-1"
+                  className="flex-1 btn-premium hover-scale"
                 >
                   Add Manually
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1 hover-scale hover:bg-accent">
                   <Upload className="h-4 w-4 mr-2" />
                   Scan Receipt
                 </Button>

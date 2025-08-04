@@ -67,74 +67,79 @@ export const SubscriptionCard = ({ subscription, onEdit, onCancel }: Subscriptio
   };
 
   return (
-    <Card className="shadow-card hover:shadow-lg transition-all duration-300 group">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
-              {subscription.logo || subscription.name.charAt(0).toUpperCase()}
+    <Card className="card-enhanced hover-lift group animate-fade-in">
+      <CardContent className="p-6 relative">
+        {/* Hover Glow Effect */}
+        <div className="absolute inset-0 rounded-lg bg-gradient-primary opacity-0 group-hover:opacity-5 transition-opacity duration-500" />
+        
+        <div className="relative z-10">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-button group-hover:shadow-glow transition-all duration-300 group-hover:scale-110">
+                {subscription.logo || subscription.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors duration-300">
+                  {subscription.name}
+                </h3>
+                {subscription.description && (
+                  <p className="text-sm text-muted-foreground">{subscription.description}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                {subscription.name}
-              </h3>
-              {subscription.description && (
-                <p className="text-sm text-muted-foreground">{subscription.description}</p>
-              )}
+            <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-all duration-300 hover-scale">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Badge className={categoryColors[subscription.category]}>
+                {subscription.category}
+              </Badge>
+              <Badge className={statusColors[subscription.status]}>
+                {subscription.status}
+              </Badge>
+            </div>
+            <div className="text-right">
+              <p className="font-bold text-lg text-foreground">
+                {formatCost(subscription.cost, subscription.billingCycle)}
+              </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </div>
 
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Badge className={categoryColors[subscription.category]}>
-              {subscription.category}
-            </Badge>
-            <Badge className={statusColors[subscription.status]}>
-              {subscription.status}
-            </Badge>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Next billing:</span>
+              <span className={cn(
+                "font-medium",
+                isUpcoming() ? "text-warning" : "text-foreground"
+              )}>
+                {getTimeUntilBilling(subscription.nextBilling)}
+              </span>
+              {isUpcoming() && <AlertCircle className="h-4 w-4 text-warning animate-pulse" />}
+            </div>
           </div>
-          <div className="text-right">
-            <p className="font-bold text-lg text-foreground">
-              {formatCost(subscription.cost, subscription.billingCycle)}
-            </p>
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">Next billing:</span>
-            <span className={cn(
-              "font-medium",
-              isUpcoming() ? "text-warning" : "text-foreground"
-            )}>
-              {getTimeUntilBilling(subscription.nextBilling)}
-            </span>
-            {isUpcoming() && <AlertCircle className="h-4 w-4 text-warning" />}
+          <div className="flex gap-2 mt-4 pt-4 border-t border-border">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 hover-scale"
+              onClick={() => onEdit?.(subscription)}
+            >
+              Edit
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground hover-scale"
+              onClick={() => onCancel?.(subscription)}
+            >
+              Cancel
+            </Button>
           </div>
-        </div>
-
-        <div className="flex gap-2 mt-4 pt-4 border-t border-border">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            onClick={() => onEdit?.(subscription)}
-          >
-            Edit
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-            onClick={() => onCancel?.(subscription)}
-          >
-            Cancel
-          </Button>
         </div>
       </CardContent>
     </Card>

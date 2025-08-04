@@ -51,13 +51,18 @@
     --gradient-primary: linear-gradient(135deg, hsl(210 100% 45%), hsl(210 100% 65%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 45%), hsl(142 76% 55%));
     --gradient-bg: linear-gradient(135deg, hsl(248 250 252), hsl(241 245 249));
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     
-    /* Shadows for Depth */
-    --shadow-card: 0 4px 12px -2px hsl(210 100% 45% / 0.08);
-    --shadow-button: 0 2px 8px -1px hsl(210 100% 45% / 0.15);
+    /* Advanced Shadows for Depth */
+    --shadow-card: 0 8px 32px -8px hsl(210 100% 45% / 0.12);
+    --shadow-button: 0 4px 16px -2px hsl(210 100% 45% / 0.2);
+    --shadow-floating: 0 20px 60px -12px hsl(210 100% 45% / 0.25);
+    --shadow-glow: 0 0 40px hsl(210 100% 45% / 0.3);
     
-    /* Animation */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Animation Variables */
+    --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
     /* Category Colors */
     --category-entertainment: 290 100% 65%;
@@ -131,5 +136,77 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Enhanced Card Styles */
+  .card-enhanced {
+    @apply bg-card border border-border/50 shadow-card backdrop-blur-sm transition-all duration-500;
+  }
+  
+  .card-enhanced:hover {
+    @apply shadow-floating border-primary/20 -translate-y-1;
+  }
+  
+  /* Glassmorphism Effect */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-card;
+  }
+  
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-xl border border-white/10;
+  }
+  
+  /* Interactive Button Enhancements */
+  .btn-premium {
+    @apply relative overflow-hidden bg-gradient-primary text-white font-semibold shadow-button transition-all duration-300;
+  }
+  
+  .btn-premium:hover {
+    @apply shadow-floating -translate-y-0.5 scale-105;
+  }
+  
+  .btn-premium:active {
+    @apply scale-95;
+  }
+  
+  /* Floating Animation */
+  .floating {
+    @apply animate-float;
+  }
+  
+  /* Stagger Children Animation */
+  .stagger-children > * {
+    animation: fade-in 0.6s ease-out;
+  }
+  
+  .stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+  
+  /* Pulse Glow Effect */
+  .pulse-glow {
+    @apply animate-pulse-glow;
+  }
+  
+  /* Interactive Hover States */
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-floating;
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105 active:scale-95;
+  }
+  
+  /* Enhanced Navigation */
+  .nav-item-active {
+    @apply bg-primary/10 text-primary border-primary/20;
+  }
+  
+  .nav-item-inactive {
+    @apply text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200;
   }
 }
