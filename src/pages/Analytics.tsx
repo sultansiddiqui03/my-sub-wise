@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { 
   DollarSign, 
   TrendingUp, 
@@ -51,12 +52,27 @@ const mockAnalytics = {
 };
 
 export const Analytics = () => {
-  const currentMonthSpending = mockAnalytics.monthlySpending[mockAnalytics.monthlySpending.length - 1].amount;
-  const previousMonthSpending = mockAnalytics.monthlySpending[mockAnalytics.monthlySpending.length - 2].amount;
-  const monthOverMonthChange = ((currentMonthSpending - previousMonthSpending) / previousMonthSpending) * 100;
-  
+  const { subscriptions, loading, getTotalMonthlySpending, getCategorySpending } = useSubscriptions();
+
+  if (loading) {
+    return <div className="min-h-screen bg-gradient-bg flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>;
+  }
+
+  const currentMonthSpending = getTotalMonthlySpending();
+  const categorySpending = getCategorySpending();
   const yearlyProjection = currentMonthSpending * 12;
-  const totalSavingsOpportunity = 156 + 20; // From insights
+  const totalSavingsOpportunity = 156 + 20; // Mock value for now
+
+  const categoryBreakdown = Object.entries(categorySpending).map(([category, amount]) => ({
+    category: category.charAt(0).toUpperCase() + category.slice(1),
+    amount: amount,
+    percentage: Math.round((amount / currentMonthSpending) * 100),
+    color: `category-${category}`
+  }));
+
+  const monthOverMonthChange = 12.5; // Mock value for now
 
   return (
     <div className="min-h-screen bg-gradient-bg pb-20">

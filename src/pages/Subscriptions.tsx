@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { SubscriptionCard, Subscription } from "@/components/subscriptions/SubscriptionCard";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -72,17 +74,36 @@ const mockSubscriptions: Subscription[] = [
 const categories = ["all", "entertainment", "productivity", "utilities", "shopping", "finance", "health", "education"];
 const statuses = ["all", "active", "trial", "cancelled"];
 
-interface SubscriptionsProps {
-  onAddSubscription: () => void;
-}
-
-export const Subscriptions = ({ onAddSubscription }: SubscriptionsProps) => {
+export const Subscriptions = () => {
+  const navigate = useNavigate();
+  const { 
+    subscriptions, 
+    loading,
+    updateSubscription,
+    deleteSubscription
+  } = useSubscriptions();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [sortBy, setSortBy] = useState<"name" | "cost" | "date">("name");
 
-  const filteredSubscriptions = mockSubscriptions
+  if (loading) {
+    return <div className="min-h-screen bg-gradient-bg flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>;
+  }
+
+  const handleEditSubscription = (subscription: any) => {
+    navigate('/add-subscription', { state: { editingSubscription: subscription } });
+  };
+
+  const handleCancelSubscription = (subscription: any) => {
+    if (confirm(`Are you sure you want to cancel ${subscription.name}?`)) {
+      updateSubscription(subscription.id, { status: 'cancelled' });
+    }
+  };
+
+  const filteredSubscriptions = subscriptions
     .filter(sub => 
       sub.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (selectedCategory === "all" || sub.category === selectedCategory) &&
@@ -99,7 +120,7 @@ export const Subscriptions = ({ onAddSubscription }: SubscriptionsProps) => {
       }
     });
 
-  const activeSubscriptions = mockSubscriptions.filter(s => s.status === "active");
+  const activeSubscriptions = subscriptions.filter(s => s.status === "active");
   const totalMonthly = activeSubscriptions.reduce((sum, sub) => {
     const monthlyCost = sub.billingCycle === "yearly" ? sub.cost / 12 : 
                        sub.billingCycle === "quarterly" ? sub.cost / 3 : sub.cost;
@@ -116,7 +137,7 @@ export const Subscriptions = ({ onAddSubscription }: SubscriptionsProps) => {
             <p className="text-primary-foreground/80">Manage all your subscriptions</p>
           </div>
           <Button 
-            onClick={onAddSubscription}
+            onClick={() => navigate('/add-subscription')}
             className="bg-white text-primary hover:bg-white/90 shadow-button"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -217,7 +238,7 @@ export const Subscriptions = ({ onAddSubscription }: SubscriptionsProps) => {
             <Card className="shadow-card">
               <CardContent className="p-12 text-center">
                 <p className="text-muted-foreground mb-4">No subscriptions found matching your criteria.</p>
-                <Button onClick={onAddSubscription}>
+                <Button onClick={() => navigate('/add-subscription')}>
                   <Plus className="h-4 w-4 mr-2" />
                   Add Your First Subscription
                 </Button>
@@ -228,6 +249,8 @@ export const Subscriptions = ({ onAddSubscription }: SubscriptionsProps) => {
               <SubscriptionCard
                 key={subscription.id}
                 subscription={subscription}
+                onEdit={handleEditSubscription}
+                onCancel={handleCancelSubscription}
               />
             ))
           )}

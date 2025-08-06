@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,8 @@ const categoryColors = {
 };
 
 export const Calendar = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2024, 7)); // August 2024
+  const { subscriptions, loading } = useSubscriptions();
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "list">("month");
 
   const today = new Date();
@@ -64,7 +66,11 @@ export const Calendar = () => {
   };
 
   const getEventsForDate = (date: Date) => {
-    return mockEvents[formatDateKey(date)] || [];
+    return subscriptions.filter(sub => {
+      const billingDate = new Date(sub.nextBilling);
+      return billingDate.toDateString() === date.toDateString() && 
+             (sub.status === 'active' || sub.status === 'trial');
+    });
   };
 
   const getTotalForDate = (date: Date) => {
@@ -87,21 +93,18 @@ export const Calendar = () => {
   };
 
   const getUpcomingEvents = () => {
-    const upcoming = [];
     const today = new Date();
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-    for (const [dateStr, events] of Object.entries(mockEvents)) {
-      const eventDate = new Date(dateStr);
-      if (eventDate >= today && eventDate <= thirtyDaysFromNow) {
-        events.forEach(event => {
-          upcoming.push({ ...event, date: eventDate });
-        });
-      }
-    }
-
-    return upcoming.sort((a, b) => a.date.getTime() - b.date.getTime());
+    return subscriptions
+      .filter(sub => (sub.status === 'active' || sub.status === 'trial'))
+      .filter(sub => {
+        const billingDate = new Date(sub.nextBilling);
+        return billingDate >= today && billingDate <= thirtyDaysFromNow;
+      })
+      .map(sub => ({ ...sub, date: new Date(sub.nextBilling) }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
   };
 
   const monthNames = ["January", "February", "March", "April", "May", "June",

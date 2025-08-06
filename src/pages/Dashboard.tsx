@@ -1,8 +1,17 @@
-import { StatsCard } from "@/components/dashboard/StatsCard";
-import { SubscriptionCard, Subscription } from "@/components/subscriptions/SubscriptionCard";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, DollarSign, TrendingUp, Calendar, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
+import { useNavigate } from "react-router-dom";
+import { 
+  Plus, 
+  Calendar as CalendarIcon, 
+  TrendingUp, 
+  DollarSign, 
+  AlertCircle
+} from "lucide-react";
 
 const mockSubscriptions: Subscription[] = [
   {
@@ -47,26 +56,36 @@ const mockSubscriptions: Subscription[] = [
   }
 ];
 
-interface DashboardProps {
-  onAddSubscription: () => void;
-}
+export const Dashboard = () => {
+  const navigate = useNavigate();
+  const { 
+    subscriptions, 
+    loading,
+    getTotalMonthlySpending, 
+    getUpcomingRenewals,
+    updateSubscription,
+    deleteSubscription
+  } = useSubscriptions();
 
-export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
-  const totalMonthly = mockSubscriptions
-    .filter(sub => sub.status === "active")
-    .reduce((sum, sub) => {
-      const monthlyCost = sub.billingCycle === "yearly" ? sub.cost / 12 : 
-                         sub.billingCycle === "quarterly" ? sub.cost / 3 : sub.cost;
-      return sum + monthlyCost;
-    }, 0);
+  if (loading) {
+    return <div className="min-h-screen bg-gradient-bg flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>;
+  }
 
-  const upcomingRenewals = mockSubscriptions.filter(sub => {
-    const now = new Date();
-    const billing = new Date(sub.nextBilling);
-    const diffTime = billing.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays <= 7 && diffDays >= 0;
-  });
+  const monthlySpending = getTotalMonthlySpending();
+  const upcomingRenewals = getUpcomingRenewals(7);
+  const activeCount = subscriptions.filter(s => s.status === 'active').length;
+
+  const handleEditSubscription = (subscription: any) => {
+    navigate('/add-subscription', { state: { editingSubscription: subscription } });
+  };
+
+  const handleCancelSubscription = (subscription: any) => {
+    if (confirm(`Are you sure you want to cancel ${subscription.name}?`)) {
+      updateSubscription(subscription.id, { status: 'cancelled' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-bg pb-20">
@@ -83,7 +102,7 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
               <p className="text-primary-foreground/80 mt-1">Smart subscription management</p>
             </div>
             <Button 
-              onClick={onAddSubscription}
+              onClick={() => navigate('/add-subscription')}
               className="btn-premium hover-scale shadow-button"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -98,7 +117,7 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
                 <DollarSign className="h-4 w-4" />
                 Monthly Total
               </div>
-              <div className="text-2xl font-bold">${totalMonthly.toFixed(2)}</div>
+              <div className="text-2xl font-bold">${monthlySpending.toFixed(2)}</div>
               <div className="text-sm text-primary-foreground/60 mt-1">This month</div>
             </div>
             <div className="glass-card p-4 rounded-xl animate-scale-in">
@@ -106,7 +125,7 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
                 <Calendar className="h-4 w-4" />
                 Active Subscriptions
               </div>
-              <div className="text-2xl font-bold">{mockSubscriptions.filter(s => s.status === "active").length}</div>
+              <div className="text-2xl font-bold">{activeCount}</div>
               <div className="text-sm text-primary-foreground/60 mt-1">Currently active</div>
             </div>
           </div>
@@ -119,29 +138,22 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
           <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <StatsCard
               title="This Month"
-              value={`$${totalMonthly.toFixed(2)}`}
-              change={-12}
-              trend="down"
+              value={`$${monthlySpending.toFixed(2)}`}
               icon={<DollarSign className="h-6 w-6 text-primary" />}
-              className="hover-lift"
             />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <StatsCard
               title="Projected Annual"
-              value={`$${(totalMonthly * 12).toFixed(0)}`}
-              change={5}
-              trend="up"
+              value={`$${(monthlySpending * 12).toFixed(0)}`}
               icon={<TrendingUp className="h-6 w-6 text-primary" />}
-              className="hover-lift"
             />
           </div>
           <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <StatsCard
               title="Active Subscriptions"
-              value={mockSubscriptions.filter(s => s.status === "active").length.toString()}
-              icon={<Calendar className="h-6 w-6 text-primary" />}
-              className="hover-lift"
+              value={activeCount.toString()}
+              icon={<CalendarIcon className="h-6 w-6 text-primary" />}
             />
           </div>
         </div>
@@ -165,6 +177,8 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
                 <div key={subscription.id} className="animate-slide-up" style={{ animationDelay: `${0.5 + index * 0.1}s` }}>
                   <SubscriptionCard
                     subscription={subscription}
+                    onEdit={handleEditSubscription}
+                    onCancel={handleCancelSubscription}
                   />
                 </div>
               ))}
@@ -184,10 +198,12 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
-            {mockSubscriptions.slice(0, 3).map((subscription, index) => (
+            {subscriptions.slice(0, 3).map((subscription, index) => (
               <div key={subscription.id} className="animate-slide-up" style={{ animationDelay: `${0.7 + index * 0.1}s` }}>
                 <SubscriptionCard
                   subscription={subscription}
+                  onEdit={handleEditSubscription}
+                  onCancel={handleCancelSubscription}
                 />
               </div>
             ))}
@@ -196,7 +212,10 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
 
         {/* Quick Actions Section */}
         <div className="grid grid-cols-2 gap-4 animate-fade-in" style={{ animationDelay: '0.8s' }}>
-          <Card className="card-enhanced hover-scale cursor-pointer group">
+          <Card 
+            className="card-enhanced hover-scale cursor-pointer group"
+            onClick={() => navigate('/add-subscription')}
+          >
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-gradient-primary rounded-xl mx-auto mb-3 flex items-center justify-center group-hover:animate-bounce-in">
                 <Plus className="h-6 w-6 text-white" />
@@ -206,7 +225,10 @@ export const Dashboard = ({ onAddSubscription }: DashboardProps) => {
             </CardContent>
           </Card>
           
-          <Card className="card-enhanced hover-scale cursor-pointer group">
+          <Card 
+            className="card-enhanced hover-scale cursor-pointer group"
+            onClick={() => navigate('/analytics')}
+          >
             <CardContent className="p-6 text-center">
               <div className="w-12 h-12 bg-gradient-success rounded-xl mx-auto mb-3 flex items-center justify-center group-hover:animate-bounce-in">
                 <TrendingUp className="h-6 w-6 text-white" />
