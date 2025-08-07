@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { SubscriptionCard } from "@/components/subscriptions/SubscriptionCard";
+import { SubscriptionCard, Subscription } from "@/components/subscriptions/SubscriptionCard";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -56,7 +56,11 @@ const mockSubscriptions: Subscription[] = [
   }
 ];
 
-export const Dashboard = () => {
+interface DashboardProps {
+  onAddSubscription?: () => void;
+}
+
+export const Dashboard = ({ onAddSubscription }: DashboardProps = {}) => {
   const navigate = useNavigate();
   const { 
     subscriptions, 
@@ -122,7 +126,7 @@ export const Dashboard = () => {
             </div>
             <div className="glass-card p-4 rounded-xl animate-scale-in">
               <div className="flex items-center gap-2 text-primary-foreground/80 text-sm mb-2">
-                <Calendar className="h-4 w-4" />
+                <CalendarIcon className="h-4 w-4" />
                 Active Subscriptions
               </div>
               <div className="text-2xl font-bold">{activeCount}</div>

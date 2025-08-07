@@ -74,7 +74,11 @@ const mockSubscriptions: Subscription[] = [
 const categories = ["all", "entertainment", "productivity", "utilities", "shopping", "finance", "health", "education"];
 const statuses = ["all", "active", "trial", "cancelled"];
 
-export const Subscriptions = () => {
+interface SubscriptionsProps {
+  onAddSubscription?: () => void;
+}
+
+export const Subscriptions = ({ onAddSubscription }: SubscriptionsProps = {}) => {
   const navigate = useNavigate();
   const { 
     subscriptions, 

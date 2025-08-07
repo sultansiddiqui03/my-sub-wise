@@ -21,7 +21,12 @@ import {
   Zap
 } from "lucide-react";
 
-export const AddSubscription = () => {
+interface AddSubscriptionProps {
+  onClose?: () => void;
+  onSave?: (subscription: any) => void;
+}
+
+export const AddSubscription = ({ onClose, onSave }: AddSubscriptionProps = {}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { addSubscription, updateSubscription } = useSubscriptions();
