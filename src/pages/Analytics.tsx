@@ -11,45 +11,58 @@ import {
   Target,
   Zap
 } from "lucide-react";
+import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  Cell
+} from "recharts";
 
-const mockAnalytics = {
-  monthlySpending: [
-    { month: "Jan", amount: 120.50 },
-    { month: "Feb", amount: 98.97 },
-    { month: "Mar", amount: 132.45 },
-    { month: "Apr", amount: 145.32 },
-    { month: "May", amount: 128.88 },
-    { month: "Jun", amount: 156.74 },
-    { month: "Jul", amount: 142.21 },
-    { month: "Aug", amount: 159.65 }
-  ],
-  categoryBreakdown: [
-    { category: "Entertainment", amount: 42.97, percentage: 27, color: "category-entertainment" },
-    { category: "Productivity", amount: 72.99, percentage: 46, color: "category-productivity" },
-    { category: "Utilities", amount: 29.99, percentage: 19, color: "category-utilities" },
-    { category: "Health", amount: 13.70, percentage: 8, color: "category-health" }
-  ],
-  insights: [
-    {
-      type: "warning",
-      title: "Duplicate Services",
-      description: "You have multiple streaming services costing $42.97/month",
-      action: "Consider consolidating to save ~$20/month"
-    },
-    {
-      type: "success", 
-      title: "Annual Savings Opportunity",
-      description: "Switching to annual billing could save you $156 this year",
-      action: "Review Adobe Creative Suite and Dropbox"
-    },
-    {
-      type: "info",
-      title: "Underutilized Subscription",
-      description: "Low usage detected on ChatGPT Plus",
-      action: "Consider downgrading or pausing"
-    }
-  ]
+// Generate realistic monthly spending data based on current subscriptions
+const generateMonthlyTrend = (currentSpending: number) => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+  const baseSpending = currentSpending;
+  
+  return months.map((month, index) => {
+    // Create realistic variation (±15% of current spending)
+    const variation = (Math.random() - 0.5) * 0.3;
+    const seasonalFactor = index < 4 ? 0.95 : 1.05; // Lower in early year, higher in summer
+    const amount = baseSpending * (1 + variation) * seasonalFactor;
+    
+    return {
+      month,
+      amount: Math.max(amount, baseSpending * 0.7), // Minimum 70% of current
+      isCurrentMonth: index === months.length - 1
+    };
+  });
 };
+
+// Custom colors for charts
+const CHART_COLORS = {
+  primary: "hsl(var(--primary))",
+  secondary: "hsl(var(--secondary))",
+  accent: "hsl(var(--accent))",
+  muted: "hsl(var(--muted-foreground))",
+  success: "hsl(var(--success))",
+  warning: "hsl(var(--warning))",
+  destructive: "hsl(var(--destructive))"
+};
+
+const CATEGORY_COLORS = [
+  CHART_COLORS.primary,
+  CHART_COLORS.secondary,
+  CHART_COLORS.accent,
+  CHART_COLORS.success,
+  CHART_COLORS.warning,
+  "#8B5CF6", // purple
+  "#06B6D4", // cyan
+];
 
 export const Analytics = () => {
   const { subscriptions, loading, getTotalMonthlySpending, getCategorySpending, getUpcomingRenewals } = useSubscriptions();
@@ -84,6 +97,13 @@ export const Analytics = () => {
     amount: amount,
     percentage: Math.round((amount / currentMonthSpending) * 100),
     color: `category-${category}`
+  }));
+
+  // Generate monthly trend data
+  const monthlyTrendData = generateMonthlyTrend(currentMonthSpending);
+  const categoryChartData = categoryBreakdown.map((cat, index) => ({
+    ...cat,
+    fill: CATEGORY_COLORS[index % CATEGORY_COLORS.length]
   }));
 
   // Mock month-over-month for demo (in real app, this would come from historical data)
@@ -145,7 +165,7 @@ export const Analytics = () => {
           />
         </div>
 
-        {/* Spending Trend */}
+        {/* Spending Trend Chart */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -154,26 +174,44 @@ export const Analytics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {mockAnalytics.monthlySpending.slice(-6).map((month) => (
-                <div key={month.month} className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{month.month}</span>
-                  <div className="flex items-center gap-3">
-                    <div className="w-32 bg-muted rounded-full h-2">
-                      <div 
-                        className="bg-gradient-primary h-2 rounded-full"
-                        style={{ width: `${(month.amount / 200) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-bold w-16 text-right">${month.amount.toFixed(2)}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis 
+                    dataKey="month" 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                  />
+                  <YAxis 
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={12}
+                    tickFormatter={(value) => `$${value.toFixed(0)}`}
+                  />
+                  <Tooltip 
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--background))",
+                      border: "1px solid hsl(var(--border))",
+                      borderRadius: "8px"
+                    }}
+                    formatter={(value: number) => [`$${value.toFixed(2)}`, "Amount"]}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="amount"
+                    stroke={CHART_COLORS.primary}
+                    strokeWidth={3}
+                    dot={{ fill: CHART_COLORS.primary, strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: CHART_COLORS.primary, strokeWidth: 2 }}
+                    className="animate-fade-in"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </CardContent>
         </Card>
 
-        {/* Category Breakdown */}
+        {/* Category Breakdown Chart */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -182,31 +220,69 @@ export const Analytics = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {categoryBreakdown.map((category) => (
-                <div key={category.category} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Badge className={`bg-${category.color}/10 text-${category.color}`}>
-                        {category.category}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">{category.percentage}%</span>
-                    </div>
-                    <span className="font-bold">${category.amount.toFixed(2)}</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div 
-                      className={`bg-gradient-primary h-2 rounded-full`}
-                      style={{ width: `${category.percentage}%` }}
+            <div className="space-y-6">
+              {/* Chart */}
+              <div className="h-48 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={categoryChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis 
+                      dataKey="category" 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
                     />
+                    <YAxis 
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      tickFormatter={(value) => `$${value.toFixed(0)}`}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        backgroundColor: "hsl(var(--background))",
+                        border: "1px solid hsl(var(--border))",
+                        borderRadius: "8px"
+                      }}
+                      formatter={(value: number) => [`$${value.toFixed(2)}`, "Monthly Spending"]}
+                    />
+                    <Bar dataKey="amount" radius={[4, 4, 0, 0]} className="animate-scale-in">
+                      {categoryChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Category Details */}
+              <div className="space-y-4">
+                {categoryBreakdown.map((category) => (
+                  <div key={category.category} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Badge className={`bg-${category.color}/10 text-${category.color}`}>
+                          {category.category}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">{category.percentage}%</span>
+                      </div>
+                      <span className="font-bold">${category.amount.toFixed(2)}</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className={`bg-gradient-primary h-2 rounded-full transition-all duration-500 ease-out animate-fade-in`}
+                        style={{ width: `${category.percentage}%` }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
-              {categoryBreakdown.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  No subscription data available
-                </div>
-              )}
+                ))}
+                {categoryBreakdown.length === 0 && (
+                  <div className="text-center text-muted-foreground py-8">
+                    No subscription data available
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>
