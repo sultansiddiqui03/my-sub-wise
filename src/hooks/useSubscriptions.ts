@@ -66,6 +66,37 @@ const defaultSubscriptions: Subscription[] = [
   }
 ];
 
+// Helper function to calculate next billing date
+const calculateNextBillingDate = (currentDate: string, billingCycle: string): string => {
+  const date = new Date(currentDate);
+  const today = new Date();
+  
+  // If the current billing date is in the past, calculate the next occurrence
+  while (date < today) {
+    switch (billingCycle) {
+      case 'monthly':
+        date.setMonth(date.getMonth() + 1);
+        break;
+      case 'quarterly':
+        date.setMonth(date.getMonth() + 3);
+        break;
+      case 'yearly':
+        date.setFullYear(date.getFullYear() + 1);
+        break;
+    }
+  }
+  
+  return date.toISOString().split('T')[0];
+};
+
+// Helper function to update subscription renewal dates
+const updateRenewalDates = (subs: Subscription[]): Subscription[] => {
+  return subs.map(sub => ({
+    ...sub,
+    nextBilling: calculateNextBillingDate(sub.nextBilling, sub.billingCycle)
+  }));
+};
+
 export const useSubscriptions = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,13 +105,15 @@ export const useSubscriptions = () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        setSubscriptions(JSON.parse(saved));
+        const loadedSubs = JSON.parse(saved);
+        // Update renewal dates for any past due subscriptions
+        setSubscriptions(updateRenewalDates(loadedSubs));
       } catch (error) {
         console.error('Error loading subscriptions:', error);
-        setSubscriptions(defaultSubscriptions);
+        setSubscriptions(updateRenewalDates(defaultSubscriptions));
       }
     } else {
-      setSubscriptions(defaultSubscriptions);
+      setSubscriptions(updateRenewalDates(defaultSubscriptions));
     }
     setLoading(false);
   }, []);
@@ -94,7 +127,8 @@ export const useSubscriptions = () => {
   const addSubscription = (subscription: Omit<Subscription, 'id'>) => {
     const newSubscription: Subscription = {
       ...subscription,
-      id: Date.now().toString()
+      id: Date.now().toString(),
+      nextBilling: calculateNextBillingDate(subscription.nextBilling, subscription.billingCycle)
     };
     setSubscriptions(prev => [...prev, newSubscription]);
     return newSubscription;
@@ -102,7 +136,20 @@ export const useSubscriptions = () => {
 
   const updateSubscription = (id: string, updates: Partial<Subscription>) => {
     setSubscriptions(prev => 
-      prev.map(sub => sub.id === id ? { ...sub, ...updates } : sub)
+      prev.map(sub => {
+        if (sub.id === id) {
+          const updated = { ...sub, ...updates };
+          // Recalculate next billing if billing cycle or date changed
+          if (updates.billingCycle || updates.nextBilling) {
+            updated.nextBilling = calculateNextBillingDate(
+              updates.nextBilling || sub.nextBilling, 
+              updates.billingCycle || sub.billingCycle
+            );
+          }
+          return updated;
+        }
+        return sub;
+      })
     );
   };
 
