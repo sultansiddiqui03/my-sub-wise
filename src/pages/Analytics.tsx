@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { 
   DollarSign, 
@@ -117,6 +119,39 @@ export const Analytics = () => {
           <div>
             <h1 className="text-2xl font-bold">Analytics</h1>
             <p className="text-primary-foreground/80">Financial insights & recommendations</p>
+          </div>
+          <div>
+            <Button
+              variant="secondary"
+              className="bg-white/90 text-primary hover:bg-white shadow-button"
+              onClick={() => {
+                const headers = ["Name","Category","Cost","Billing Cycle","Next Billing","Status"];
+                const rows = subscriptions.map((s) => [
+                  s.name,
+                  s.category,
+                  s.cost,
+                  s.billingCycle,
+                  s.nextBilling,
+                  s.status,
+                ]);
+                const csv = [headers, ...rows]
+                  .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
+                  .join("\n");
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "subscriptions.csv";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                toast({ title: "Exported", description: "Your subscriptions CSV has been downloaded." });
+              }}
+              aria-label="Export subscriptions to CSV"
+            >
+              Export CSV
+            </Button>
           </div>
         </div>
 

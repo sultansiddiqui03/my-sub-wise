@@ -16,20 +16,20 @@
     --popover: 0 0% 100%;
     --popover-foreground: 200 15% 15%;
 
-    /* Primary Brand - Calming Blue-Green */
-    --primary: 180 35% 50%; /* Peaceful teal */
+    /* Primary Brand - Modern Violet */
+    --primary: 262 83% 58%; /* Vibrant violet */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 180 35% 70%;
+    --primary-glow: 262 83% 70%;
 
-    /* Secondary - Soft Green */
-    --secondary: 140 30% 55%; /* Gentle sage green */
+    /* Secondary - Navy */
+    --secondary: 222 47% 40%; /* Modern navy */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 200 20% 94%;
     --muted-foreground: 200 15% 50%;
 
-    --accent: 180 35% 95%;
-    --accent-foreground: 180 35% 50%;
+    --accent: 262 83% 96%;
+    --accent-foreground: 262 83% 58%;
 
     /* Calming States */
     --success: 140 30% 55%;
@@ -43,21 +43,21 @@
 
     --border: 200 20% 90%;
     --input: 200 20% 96%;
-    --ring: 180 35% 50%;
+    --ring: 262 83% 58%;
 
     --radius: 0.75rem;
 
     /* Gradients for Visual Appeal */
-    --gradient-primary: linear-gradient(135deg, hsl(180 35% 50%), hsl(180 35% 70%));
+    --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%));
     --gradient-success: linear-gradient(135deg, hsl(140 30% 55%), hsl(140 30% 65%));
     --gradient-bg: linear-gradient(135deg, hsl(200 25% 97%), hsl(190 30% 95%));
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     
     /* Advanced Shadows for Depth */
-    --shadow-card: 0 8px 32px -8px hsl(180 35% 50% / 0.08);
-    --shadow-button: 0 4px 16px -2px hsl(180 35% 50% / 0.15);
-    --shadow-floating: 0 20px 60px -12px hsl(180 35% 50% / 0.18);
-    --shadow-glow: 0 0 40px hsl(180 35% 50% / 0.2);
+    --shadow-card: 0 8px 32px -8px hsl(262 83% 58% / 0.08);
+    --shadow-button: 0 4px 16px -2px hsl(262 83% 58% / 0.15);
+    --shadow-floating: 0 20px 60px -12px hsl(262 83% 58% / 0.18);
+    --shadow-glow: 0 0 40px hsl(262 83% 58% / 0.2);
     
     /* Animation Variables */
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
