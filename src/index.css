@@ -50,7 +50,7 @@
     /* Gradients for Visual Appeal */
     --gradient-primary: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 70%));
     --gradient-success: linear-gradient(135deg, hsl(140 30% 55%), hsl(140 30% 65%));
-    --gradient-bg: linear-gradient(135deg, hsl(200 25% 97%), hsl(190 30% 95%));
+    --gradient-bg: linear-gradient(135deg, hsl(262 83% 98%), hsl(230 40% 96%));
     --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     
     /* Advanced Shadows for Depth */
